@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <interface>
-  <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.4"/>
-  <requires lib="webkitgtk" version="6.0"/>
+  <requires lib="gtk" version="4.12" />
+  <requires lib="libadwaita" version="1.4" />
+  <requires lib="webkitgtk" version="6.0" />
   <template class="NoteDownWindow" parent="AdwApplicationWindow">
     <property name="title">NoteDown</property>
     <property name="default_width">600</property>
@@ -19,7 +19,11 @@
             </child>
             <child type="title">
               <object class="GtkMenuButton">
-                <property name="label">NoteDown</property>
+                <binding name="label">
+                  <closure type="gchararray" function="get_title_from_file">
+                    <lookup name="file">NoteDownWindow</lookup>
+                  </closure>
+                </binding>
                 <property name="popover">
                   <object class="GtkPopover"></object>
                 </property>
@@ -51,8 +55,12 @@
   <menu id="main-menu">
     <section>
       <item>
-        <attribute name="label">_New Window</attribute>
+        <attribute name="label">_New...</attribute>
         <attribute name="action">app.new</attribute>
+      </item>
+      <item>
+        <attribute name="label">_Open...</attribute>
+        <attribute name="action">app.open</attribute>
       </item>
     </section>
     <section>
@@ -71,7 +79,7 @@
         <attribute name="action">win.save-as</attribute>
       </item>
       <item>
-        <attribute name="label">Pr_operties</attribute>
+        <attribute name="label">Properties</attribute>
         <attribute name="action">win.properties</attribute>
       </item>
     </section>

@@ -1,4 +1,20 @@
+using Gee;
+
+public delegate void ReadyFunc();
+
+public class ReadyFuncStruct {
+	public ReadyFunc call;
+
+	public ReadyFuncStruct(owned ReadyFunc f) {
+		call = (owned) f;
+	}
+}
+
 public class NoteDownEditor : WebKit.WebView {
+
+	private bool loaded = false;
+
+	private LinkedList<ReadyFuncStruct?> ready_funcs = new LinkedList<ReadyFuncStruct?> ();
 
 	public override void constructed() {
 		base.constructed();
@@ -6,12 +22,36 @@ public class NoteDownEditor : WebKit.WebView {
 			allow_file_access_from_file_urls = true
 		};
 		this.set_background_color(Gdk.RGBA() { alpha = 0 });
-		this.load_uri("http://localhost:5173/");
-		// this.load_uri("file:///home/zhi/Work/scratch/notedown-web/dist/index.html");
+		// this.load_uri("http://localhost:5173/");
+		this.load_uri("file:///home/zhi/Work/scratch/notedown-web/dist/index.html");
+		this.load_changed.connect((event) => {
+			loaded = event == WebKit.LoadEvent.FINISHED;
+			if (loaded) {
+				foreach (var f in ready_funcs) {
+					f.call();
+				}
+				ready_funcs.clear();
+			}
+		});
 	}
 
-	public async string get_markdown() throws Error {
-		var val = yield this.evaluate_javascript("editor.getMarkdown()", -1, null, null, null);
+	public void ready(owned ReadyFunc f) {
+		if (loaded) {
+			f();
+		} else {
+			ready_funcs.add(new ReadyFuncStruct((owned) f));
+		}
+	}
+
+	public async void set_content(string content) throws Error {
+		var args = new VariantDict();
+		args.insert("content", "s", content);
+		yield this.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
+	}
+
+	public async string get_content() throws Error {
+		var val = yield this.evaluate_javascript("editor.getMarkdown()", -1, null, null);
+
 		if (!val.is_string()) {
 			throw new Error(Quark.from_string("abc"), 1, "not a string");
 		}
@@ -25,9 +65,41 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	[GtkChild]
 	private unowned NoteDownEditor editor { get; }
 
+	private File? _file;
+
+	public File? file {
+		set {
+			_file = value;
+			if (_file != null) {
+				editor.ready(() => {
+					read_file_to_editor.begin(_file);
+				});
+			}
+		}
+		get {
+			return _file;
+		}
+	}
+
 	public NoteDownWindow(NoteDownApp application) {
-		Object(application: application);
+		Object(application : application);
 		this.setup_actions();
+	}
+
+	private async void read_file_to_editor(File? file) {
+		try {
+			var data = yield file.load_bytes_async(null, null);
+
+			var content = (string) data.get_data();
+			yield editor.set_content(content);
+		} catch (Error err) {
+			warning("error: %s", err.message);
+		}
+	}
+
+	[GtkCallback]
+	private string get_title_from_file() {
+		return file == null ? "Unnamed" : file.get_basename();
 	}
 
 	[GtkCallback]
@@ -35,12 +107,47 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 		this.application.lookup_action("new").activate(null);
 	}
 
+	private async void save_current_doc_async() {
+		if (file != null) {
+			yield save_current_doc_to_file(file);
+		} else {
+			file = yield save_as_doc_async();
+		}
+	}
+
 	public void save_current_doc() {
-		
+		save_current_doc_async.begin();
+	}
+
+	private async File ? save_as_doc_async() {
+		File? file = null;
+		try {
+			file = yield(new Gtk.FileDialog()).save(this, null);
+			return_if_fail(file != null);
+			yield save_current_doc_to_file(file);
+		} catch (Error err) {
+			warning("error: %s", err.message);
+		}
+		return file;
+	}
+
+	private async void save_current_doc_to_file(File file) {
+		try {
+			var text = yield editor.get_content();
+
+			var stream = file.query_exists() ?
+			  yield file.open_readwrite_async() :
+			  yield file.create_readwrite_async(FileCreateFlags.NONE);
+
+			warn_if_fail(yield stream.output_stream.write_all_async(text.data, Priority.DEFAULT, null, null));
+			warn_if_fail(yield stream.close_async());
+		} catch (Error err) {
+			warning("error: %s", err.message);
+		}
 	}
 
 	public void save_as_doc() {
-		// TODO
+		save_as_doc_async.begin();
 	}
 
 	private void setup_actions() {
@@ -67,8 +174,39 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 public class NoteDownApp : Adw.Application {
 
 	public NoteDownApp() {
-		Object(application_id: "io.gitee.zhi.notedown.App", flags: ApplicationFlags.FLAGS_NONE);
+		Object(application_id : "io.gitee.zhi.notedown.App", flags : ApplicationFlags.FLAGS_NONE);
 		this.setup_actions();
+	}
+
+	public void show_new_window() {
+		new NoteDownWindow(this).present();
+	}
+
+	private async void open_window_by_file_async() {
+		try {
+			var file = yield(new Gtk.FileDialog()).open(get_active_window(), null);
+			return_if_fail(file != null);
+
+			var current_window = this.get_active_window() as NoteDownWindow;
+			if (current_window != null && current_window.file == null) {
+				current_window.file = file;
+				return;
+			}
+
+			var editorWindow = new NoteDownWindow(this);
+			editorWindow.file = file;
+			editorWindow.present();
+		} catch (Error err) {
+			warning("error: %s", err.message);
+		}
+	}
+
+	public void open_window_by_file() {
+		open_window_by_file_async.begin();
+	}
+
+	public void show_pref_window() {
+		// TODO
 	}
 
 	public void show_about_window() {
@@ -85,19 +223,16 @@ public class NoteDownApp : Adw.Application {
 		);
 	}
 
-	public void show_pref_window() {
-		// TODO
-	}
-
-	public void show_new_window() {
-		new NoteDownWindow(this).present();
-	}
-
 	private void setup_actions() {
 		var new_action = new SimpleAction("new", null);
 		new_action.activate.connect(show_new_window);
 		this.add_action(new_action);
 		this.set_accels_for_action("app.new", { "<Control>n" });
+
+		var open_action = new SimpleAction("open", null);
+		open_action.activate.connect(open_window_by_file);
+		this.add_action(open_action);
+		this.set_accels_for_action("app.open", { "<Control>o" });
 
 		var about_action = new SimpleAction("about", null);
 		about_action.activate.connect(show_about_window);

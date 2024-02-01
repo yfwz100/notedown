@@ -2,8 +2,9 @@
 - [x] webkit-based editor container with transparent background.
 - [x] marktext-muya-based markdown editor.
 - [x] get markdown text from webkit.
-- [ ] save-as dialog.
-- [ ] open dialog.
-- [ ] title changed according to open file.
+- [x] save-as dialog.
+- [x] save or save dialog.
+- [x] open dialog.
+- [x] title changed according to open file.
 - [ ] quick open popover under title.
 - [ ] package static editor resources in GResources.
