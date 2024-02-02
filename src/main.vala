@@ -1,20 +1,20 @@
 using Gee;
 
-public delegate void ReadyFunc();
-
-public class ReadyFuncStruct {
-	public ReadyFunc call;
-
-	public ReadyFuncStruct(owned ReadyFunc f) {
-		call = (owned) f;
-	}
-}
-
 public class NoteDownEditor : WebKit.WebView {
 
-	private bool loaded = false;
+	public delegate void ReadyFunc();
+
+	private class ReadyFuncStruct {
+		public ReadyFunc call;
+
+		public ReadyFuncStruct(owned ReadyFunc f) {
+			call = (owned) f;
+		}
+	}
 
 	private LinkedList<ReadyFuncStruct?> ready_funcs = new LinkedList<ReadyFuncStruct?> ();
+
+	private bool loaded = false;
 
 	public override void constructed() {
 		base.constructed();
@@ -45,7 +45,7 @@ public class NoteDownEditor : WebKit.WebView {
 
 	public async void set_content(string content) throws Error {
 		var args = new VariantDict();
-		args.insert("content", "s", content);
+		args.insert_value("content", new Variant.string(content));
 		yield this.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
 	}
 
