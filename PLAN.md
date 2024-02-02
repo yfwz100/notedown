@@ -6,5 +6,6 @@
 - [x] save or save dialog.
 - [x] open dialog.
 - [x] title changed according to open file.
-- [ ] quick open popover under title.
+- [x] tips on save
+- [ ] properties popover under title.
 - [ ] package static editor resources in GResources.

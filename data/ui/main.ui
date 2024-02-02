@@ -8,47 +8,51 @@
     <property name="default_width">600</property>
     <property name="default_height">400</property>
     <child>
-      <object class="AdwToolbarView">
-        <child type="top">
-          <object class="AdwHeaderBar">
-            <child>
-              <object class="GtkButton" id="add_btn">
-                <property name="icon-name">list-add</property>
-                <signal name="clicked" handler="on_new_window"></signal>
-              </object>
-            </child>
-            <child type="title">
-              <object class="GtkMenuButton">
-                <binding name="label">
-                  <closure type="gchararray" function="get_title_from_file">
-                    <lookup name="file">NoteDownWindow</lookup>
-                  </closure>
-                </binding>
-                <property name="popover">
-                  <object class="GtkPopover"></object>
-                </property>
-              </object>
-            </child>
-            <child type="end">
-              <object class="GtkMenuButton">
-                <property name="icon-name">open-menu-symbolic</property>
-                <property name="popover">
-                  <object class="GtkPopoverMenu">
-                    <property name="menu-model">main-menu</property>
+      <object class="AdwToastOverlay" id="overlay">
+        <child>
+          <object class="AdwToolbarView">
+            <child type="top">
+              <object class="AdwHeaderBar">
+                <child>
+                  <object class="GtkButton" id="add_btn">
+                    <property name="icon-name">list-add</property>
+                    <signal name="clicked" handler="on_new_window"></signal>
                   </object>
-                </property>
+                </child>
+                <child type="title">
+                  <object class="GtkMenuButton">
+                    <binding name="label">
+                      <closure type="gchararray" function="get_title_from_file">
+                        <lookup name="file">NoteDownWindow</lookup>
+                      </closure>
+                    </binding>
+                    <property name="popover">
+                      <object class="GtkPopover"></object>
+                    </property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkMenuButton">
+                    <property name="icon-name">open-menu-symbolic</property>
+                    <property name="popover">
+                      <object class="GtkPopoverMenu">
+                        <property name="menu-model">main-menu</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="end">
+                  <object class="GtkButton">
+                    <property name="icon-name">system-search-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
-            <child type="end">
-              <object class="GtkButton">
-                <property name="icon-name">system-search-symbolic</property>
-              </object>
-            </child>
+            <property name="content">
+              <object class="NoteDownEditor" id="editor"></object>
+            </property>
           </object>
         </child>
-        <property name="content">
-          <object class="NoteDownEditor" id="editor"></object>
-        </property>
       </object>
     </child>
   </template>

@@ -63,7 +63,10 @@ public class NoteDownEditor : WebKit.WebView {
 public class NoteDownWindow : Adw.ApplicationWindow {
 
 	[GtkChild]
-	private unowned NoteDownEditor editor { get; }
+	private unowned NoteDownEditor editor;
+
+	[GtkChild]
+	private unowned Adw.ToastOverlay overlay;
 
 	private File? _file;
 
@@ -107,6 +110,10 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 		this.application.lookup_action("new").activate(null);
 	}
 
+	public void show_toast(string msg) {
+		overlay.add_toast(new Adw.Toast(msg));
+	}
+
 	private async void save_current_doc_async() {
 		if (file != null) {
 			yield save_current_doc_to_file(file);
@@ -126,7 +133,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 			return_if_fail(file != null);
 			yield save_current_doc_to_file(file);
 		} catch (Error err) {
-			warning("error: %s", err.message);
+			show_toast(err.message);
 		}
 		return file;
 	}
@@ -141,8 +148,10 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
 			warn_if_fail(yield stream.output_stream.write_all_async(text.data, Priority.DEFAULT, null, null));
 			warn_if_fail(yield stream.close_async());
+
+			show_toast("Save successfully!");
 		} catch (Error err) {
-			warning("error: %s", err.message);
+			show_toast(err.message);
 		}
 	}
 
