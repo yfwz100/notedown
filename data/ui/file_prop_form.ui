@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk" version="4.12" />
+  <requires lib="libadwaita" version="1.4" />
+  <template class="FilePropForm" parent="AdwBin">
+    <child>
+      <object class="GtkListBox">
+        <property name="selection-mode">none</property>
+        <child>
+          <object class="AdwActionRow">
+            <style>
+              <class name="property" />
+            </style>
+            <property name="title" translatable="yes">File Name</property>
+            <binding name="subtitle">
+              <lookup name="file_name">FilePropForm</lookup>
+            </binding>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <style>
+              <class name="property" />
+            </style>
+            <property name="title" translatable="yes">File Path</property>
+            <binding name="subtitle">
+              <lookup name="file_path">FilePropForm</lookup>
+            </binding>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <style>
+              <class name="property" />
+            </style>
+            <property name="title" translatable="yes">File Size</property>
+            <binding name="subtitle">
+              <lookup name="file_size">FilePropForm</lookup>
+            </binding>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

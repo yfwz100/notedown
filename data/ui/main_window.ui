@@ -21,13 +21,29 @@
                 </child>
                 <child type="title">
                   <object class="GtkMenuButton">
+                    <binding name="sensitive">
+                      <closure type="gboolean" function="is_file_valid">
+                        <lookup name="file">NoteDownWindow</lookup>
+                      </closure>
+                    </binding>
                     <binding name="label">
                       <closure type="gchararray" function="get_title_from_file">
                         <lookup name="file">NoteDownWindow</lookup>
                       </closure>
                     </binding>
                     <property name="popover">
-                      <object class="GtkPopover"></object>
+                      <object class="GtkPopover">
+                        <style>
+                          <class name="boxed-list" />
+                        </style>
+                        <child>
+                          <object class="FilePropForm">
+                            <binding name="file">
+                              <lookup name="file">NoteDownWindow</lookup>
+                            </binding>
+                          </object>
+                        </child>
+                      </object>
                     </property>
                   </object>
                 </child>

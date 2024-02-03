@@ -1,18 +1,42 @@
 using Gee;
 
+[GtkTemplate(ui = "/ui/file_prop_form.ui")]
+public class FilePropForm : Adw.Bin {
+
+	public File? file {
+		set {
+			read_attrs_from_file.begin(value);
+		}
+	}
+	
+	public string file_name { get; set; }
+	public string file_path { get; set; }
+	public string file_size { get; set; }
+
+	private async void read_attrs_from_file(File? file) throws Error {
+		return_if_fail(file != null);
+
+		file_name = file.get_basename();
+		file_path = file.get_parent().get_path();
+
+		var data = yield file.load_bytes_async(null, null);
+		file_size = "%d kB".printf(data.length / 1024);
+	}
+}
+
 public class NoteDownEditor : WebKit.WebView {
 
 	public delegate void ReadyFunc();
 
-	private class ReadyFuncStruct {
+	private class ReadyFuncItem {
 		public ReadyFunc call;
 
-		public ReadyFuncStruct(owned ReadyFunc f) {
-			call = (owned) f;
+		public ReadyFuncItem(owned ReadyFunc ready) {
+			call = (owned) ready;
 		}
 	}
 
-	private LinkedList<ReadyFuncStruct?> ready_funcs = new LinkedList<ReadyFuncStruct?> ();
+	private LinkedList<ReadyFuncItem?> ready_funcs = new LinkedList<ReadyFuncItem?> ();
 
 	private bool loaded = false;
 
@@ -35,11 +59,11 @@ public class NoteDownEditor : WebKit.WebView {
 		});
 	}
 
-	public void ready(owned ReadyFunc f) {
+	public void ready(owned ReadyFunc ready) {
 		if (loaded) {
-			f();
+			ready();
 		} else {
-			ready_funcs.add(new ReadyFuncStruct((owned) f));
+			ready_funcs.add(new ReadyFuncItem((owned) ready));
 		}
 	}
 
@@ -59,7 +83,7 @@ public class NoteDownEditor : WebKit.WebView {
 	}
 }
 
-[GtkTemplate(ui = "/ui/main.ui")]
+[GtkTemplate(ui = "/ui/main_window.ui")]
 public class NoteDownWindow : Adw.ApplicationWindow {
 
 	[GtkChild]
@@ -98,6 +122,11 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 		} catch (Error err) {
 			warning("error: %s", err.message);
 		}
+	}
+
+	[GtkCallback]
+	public bool is_file_valid() {
+		return file != null;
 	}
 
 	[GtkCallback]
@@ -220,6 +249,7 @@ public class NoteDownApp : Adw.Application {
 
 	public void show_about_window() {
 		Adw.show_about_window(this.get_active_window(),
+		                      "application-icon", "notedown",
 		                      "application-name", "NoteDown",
 		                      "developer-name", "Wang",
 		                      "comments", "A simple markdown editor",

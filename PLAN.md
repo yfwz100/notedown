@@ -6,6 +6,11 @@
 - [x] save or save dialog.
 - [x] open dialog.
 - [x] title changed according to open file.
-- [x] tips on save
-- [ ] properties popover under title.
+- [x] tips on save.
+- [x] properties popover under title.
+- [ ] application icon.
+- [ ] find & replace.
+- [ ] dark mode.
+- [ ] outline.
+- [ ] file sidebar.
 - [ ] package static editor resources in GResources.
