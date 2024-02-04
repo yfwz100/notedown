@@ -22,6 +22,20 @@ public class FilePropForm : Adw.Bin {
 		var data = yield file.load_bytes_async(null, null);
 		file_size = "%d kB".printf(data.length / 1024);
 	}
+
+	[GtkCallback]
+	public void copy_file_name() {
+		copy_text(file_name);
+	}
+
+	[GtkCallback]
+	public void copy_file_path() {
+		copy_text(file_path);
+	}
+
+	protected void copy_text(string text) {
+		get_clipboard().set_text(text);
+	}
 }
 
 public class NoteDownEditor : WebKit.WebView {
@@ -146,6 +160,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	private async void save_current_doc_async() {
 		if (file != null) {
 			yield save_current_doc_to_file(file);
+			this.file = file;
 		} else {
 			file = yield save_as_doc_async();
 		}

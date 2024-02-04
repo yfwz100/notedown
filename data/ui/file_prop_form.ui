@@ -15,6 +15,15 @@
             <binding name="subtitle">
               <lookup name="file_name">FilePropForm</lookup>
             </binding>
+            <child>
+              <object class="GtkButton">
+                <style>
+                  <class name="flat" />
+                </style>
+                <property name="icon-name">edit-copy-symbolic</property>
+                <signal name="clicked" handler="copy_file_name" />
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -26,6 +35,15 @@
             <binding name="subtitle">
               <lookup name="file_path">FilePropForm</lookup>
             </binding>
+            <child>
+              <object class="GtkButton">
+                <style>
+                  <class name="flat" />
+                </style>
+                <property name="icon-name">edit-copy-symbolic</property>
+                <signal name="clicked" handler="copy_file_path" />
+              </object>
+            </child>
           </object>
         </child>
         <child>
