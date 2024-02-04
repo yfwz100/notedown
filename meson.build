@@ -2,8 +2,13 @@ project(
   'notedown',
   'vala',
   version: '0.48.7',
-  license: 'LGPL2.1+',
+  license: 'MIT',
 )
+
+notedown_prefix = get_option('prefix')
+notedown_datadir = join_paths(notedown_prefix, get_option('datadir'))
+
+subdir('data/icons')
 
 gnome = import('gnome')
 
@@ -28,4 +33,10 @@ executable(
   ],
   c_args: [],
   install: true
+)
+
+gnome.post_install(
+  gtk_update_icon_cache: true,
+  glib_compile_schemas: true,
+  update_desktop_database: true,
 )

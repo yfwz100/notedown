@@ -8,7 +8,7 @@
 - [x] title changed according to open file.
 - [x] tips on save.
 - [x] properties popover under title.
-- [ ] application icon.
+- [x] application icon.
 - [ ] find & replace.
 - [ ] dark mode.
 - [ ] outline.
