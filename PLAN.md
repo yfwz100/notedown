@@ -9,7 +9,9 @@
 - [x] tips on save.
 - [x] properties popover under title.
 - [x] application icon.
-- [ ] find & replace.
+- [ ] find.
+- [ ] replace.
+- [ ] undo & redo.
 - [ ] dark mode.
 - [ ] outline.
 - [ ] file sidebar.
