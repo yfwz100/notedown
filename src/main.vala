@@ -14,7 +14,9 @@ public class FilePropForm : Adw.Bin {
 	public string file_size { get; set; }
 
 	private async void read_attrs_from_file(File? file) throws Error {
-		return_if_fail(file != null);
+		if (file == null) {
+			return;
+		}
 
 		file_name = file.get_basename();
 		file_path = file.get_parent().get_path();
