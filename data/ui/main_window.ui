@@ -58,7 +58,7 @@
                   </object>
                 </child>
                 <child type="end">
-                  <object class="GtkButton">
+                  <object class="GtkToggleButton" id="search_btn">
                     <property name="icon-name">system-search-symbolic</property>
                   </object>
                 </child>
@@ -67,6 +67,86 @@
             <property name="content">
               <object class="NoteDownEditor" id="editor"></object>
             </property>
+            <child type="bottom">
+              <!-- <object class="GtkBox">
+                <style>
+                  <class name="frame" />
+                  <class name="toolbar" />
+                </style>
+                <property name="orientation">HORIZONTAL</property>
+                <binding name="visible">
+                  <lookup name="active">search_btn</lookup>
+                </binding>
+                <child>
+                  <object class="GtkSearchEntry"></object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">go-up-symbolic</property>
+                    <signal name="clicked" handler="find_prev"></signal>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">go-down-symbolic</property>
+                    <signal name="clicked" handler="find_next"></signal>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">edit-delete-symbolic</property>
+                    <signal name="clicked" handler="on_close_search_bar"></signal>
+                  </object>
+                </child>
+              </object> -->
+              <object class="GtkSearchBar" id="search_bar">
+                <style>
+                  <class name="frame" />
+                </style>
+                <property
+                  name="search-mode-enabled"
+                  bind-source="search_btn"
+                  bind-property="active"
+                  bind-flags="bidirectional"
+                />
+                <property name="show-close-button">yes</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <style>
+                      <class name="linked" />
+                    </style>
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkSearchEntry" id="search_entry">
+                        <signal name="search-changed" handler="on_search" />
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="icon-name">go-up-symbolic</property>
+                        <binding name="sensitive">
+                          <closure type="gboolean" function="has_search_result">
+                            <lookup name="search_result">NoteDownWindow</lookup>
+                          </closure>
+                        </binding>
+                        <signal name="clicked" handler="find_prev"></signal>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="icon-name">go-down-symbolic</property>
+                        <binding name="sensitive">
+                          <closure type="gboolean" function="has_search_result">
+                            <lookup name="search_result">NoteDownWindow</lookup>
+                          </closure>
+                        </binding>
+                        <signal name="clicked" handler="find_next"></signal>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

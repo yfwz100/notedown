@@ -8,7 +8,7 @@ public class FilePropForm : Adw.Bin {
 			read_attrs_from_file.begin(value);
 		}
 	}
-	
+
 	public string file_name { get; set; }
 	public string file_path { get; set; }
 	public string file_size { get; set; }
@@ -22,6 +22,7 @@ public class FilePropForm : Adw.Bin {
 		file_path = file.get_parent().get_path();
 
 		var data = yield file.load_bytes_async(null, null);
+
 		file_size = "%d kB".printf(data.length / 1024);
 	}
 
@@ -37,6 +38,32 @@ public class FilePropForm : Adw.Bin {
 
 	protected void copy_text(string text) {
 		get_clipboard().set_text(text);
+	}
+}
+
+public class SearchResult : Object {
+	private unowned NoteDownEditor editor;
+
+	public SearchResult(NoteDownEditor editor) {
+		this.editor = editor;
+	}
+
+	public async void highlight_next() {
+		yield this.highlight("next");
+	}
+
+	public async void highlight_prev() {
+		yield this.highlight("prev");
+	}
+
+	protected async void highlight(string dir) {
+		try {
+			var args = new VariantDict();
+			args.insert_value("dir", new Variant.string(dir));
+			yield this.editor.call_async_javascript_function("editor.find(dir)", -1, args.end(), null, null);
+		} catch (Error err) {
+			warning("highlight: %s", err.message);
+		}
 	}
 }
 
@@ -58,6 +85,7 @@ public class NoteDownEditor : WebKit.WebView {
 
 	public override void constructed() {
 		base.constructed();
+		this.editable = false;
 		this.settings = new WebKit.Settings() {
 			allow_file_access_from_file_urls = true
 		};
@@ -81,6 +109,17 @@ public class NoteDownEditor : WebKit.WebView {
 		} else {
 			ready_funcs.add(new ReadyFuncItem((owned) ready));
 		}
+	}
+
+	public async SearchResult ? search(string keyword) throws Error {
+		var args = new VariantDict();
+		args.insert_value("keyword", new Variant.string(keyword));
+		yield this.call_async_javascript_function("editor.search(keyword)", -1, args.end(), null, null);
+
+		if (keyword == "") {
+			return null;
+		}
+		return new SearchResult(this);
 	}
 
 	public async void set_content(string content) throws Error {
@@ -108,6 +147,14 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	[GtkChild]
 	private unowned Adw.ToastOverlay overlay;
 
+	[GtkChild]
+	private unowned Gtk.SearchBar search_bar;
+
+	[GtkChild]
+	private unowned Gtk.SearchEntry search_entry;
+
+	public SearchResult? search_result { set; get; }
+
 	private File? _file;
 
 	public File? file {
@@ -127,6 +174,23 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	public NoteDownWindow(NoteDownApp application) {
 		Object(application : application);
 		this.setup_actions();
+		this.setup_ui();
+	}
+
+	private void setup_ui() {
+		search_bar.connect_entry(search_entry);
+		search_bar.set_key_capture_widget(this);
+		search_bar.notify["search-mode-enabled"].connect_after(() => {
+			if (!search_bar.search_mode_enabled) {
+				this.editor.search.begin("");
+				this.search_result = null;
+			}
+		});
+	}
+
+	[GtkCallback]
+	private bool has_search_result() {
+		return search_result != null;
 	}
 
 	private async void read_file_to_editor(File? file) {
@@ -155,6 +219,33 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 		this.application.lookup_action("new").activate(null);
 	}
 
+	[GtkCallback]
+	private void on_search() {
+		this.editor.search.begin(search_entry.text, (obj, res) => {
+			try {
+				this.search_result = this.editor.search.end(res);
+			} catch (Error err) {
+				warning("search error: %s", err.message);
+			}
+		});
+	}
+
+	[GtkCallback]
+	private void find_next() {
+		if (this.search_result == null) {
+			return;
+		}
+		this.search_result.highlight_next.begin();
+	}
+
+	[GtkCallback]
+	private void find_prev() {
+		if (this.search_result == null) {
+			return;
+		}
+		this.search_result.highlight_prev.begin();
+	}
+
 	public void show_toast(string msg) {
 		overlay.add_toast(new Adw.Toast(msg));
 	}
@@ -162,6 +253,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	private async void save_current_doc_async() {
 		if (file != null) {
 			yield save_current_doc_to_file(file);
+
 			this.file = file;
 		} else {
 			file = yield save_as_doc_async();
