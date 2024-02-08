@@ -1,0 +1,19 @@
+{
+  "name": "notedown-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@marktext/muya": "^0.2.5"
+  },
+  "devDependencies": {
+    "sass": "^1.70.0",
+    "vite": "^5.0.12"
+  },
+  "resolutions": {
+    "file-icons": "0.0.0"
+  }
+}
