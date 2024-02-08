@@ -1,0 +1,23 @@
+html,
+body {
+  --icon-color: #000;
+  --theme-color: #ccc;
+  --editor-color: #555;
+  --selection-color: #ccc;
+}
+.mu-icon-wrapper i.icon > i[class^='icon-'] {
+  left: 0 !important;
+}
+.mu-format-picker li.item.active {
+  background-color: #efefef;
+}
+.mu-format-picker li.item .icon-wrapper i.icon > i[class^='icon-'] {
+  display: block !important;
+  left: 0 !important;
+}
+.mu-front-menu li .icon-wrapper i.icon > i[class^='icon-'] {
+  left: 0 !important;
+}
+.mu-front-menu li .turn-into-item.active .icon-wrapper {
+  background-color: #efefef;
+}
