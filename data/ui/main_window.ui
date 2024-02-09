@@ -68,41 +68,7 @@
               <object class="NoteDownEditor" id="editor"></object>
             </property>
             <child type="bottom">
-              <!-- <object class="GtkBox">
-                <style>
-                  <class name="frame" />
-                  <class name="toolbar" />
-                </style>
-                <property name="orientation">HORIZONTAL</property>
-                <binding name="visible">
-                  <lookup name="active">search_btn</lookup>
-                </binding>
-                <child>
-                  <object class="GtkSearchEntry"></object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="icon-name">go-up-symbolic</property>
-                    <signal name="clicked" handler="find_prev"></signal>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="icon-name">go-down-symbolic</property>
-                    <signal name="clicked" handler="find_next"></signal>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="icon-name">edit-delete-symbolic</property>
-                    <signal name="clicked" handler="on_close_search_bar"></signal>
-                  </object>
-                </child>
-              </object> -->
               <object class="GtkSearchBar" id="search_bar">
-                <style>
-                  <class name="frame" />
-                </style>
                 <property
                   name="search-mode-enabled"
                   bind-source="search_btn"
