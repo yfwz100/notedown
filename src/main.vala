@@ -85,6 +85,8 @@ public class NoteDownEditor : Adw.Bin {
 
 	private bool loaded = false;
 
+	public signal void content_updated(string content);
+
 	public override void constructed() {
 		base.constructed();
 
@@ -100,9 +102,7 @@ public class NoteDownEditor : Adw.Bin {
 		web_view.set_background_color(Gdk.RGBA() { alpha = 0 });
 
 		var ucm = web_view.user_content_manager;
-		ucm.script_message_received.connect((msg) => {
-			stdout.printf("msg: %s\n", msg.to_string());
-		});
+		ucm.script_message_received.connect(hanlde_script_messages);
 		string world_name = null;
 		ucm.register_script_message_handler("editor", world_name);
 
@@ -120,6 +120,21 @@ public class NoteDownEditor : Adw.Bin {
 		this.child = web_view;
 
 		this.web_view = web_view;
+	}
+
+	private void hanlde_script_messages(JSC.Value msg_value) {
+		if (!msg_value.is_object()) {
+			return_if_reached();
+		}
+		var msg_type = msg_value.object_get_property("type").to_string();
+		switch (msg_type) {
+		case "content-change":
+			this.content_updated(msg_value.object_get_property("content").to_string());
+			break;
+		default:
+			stdout.printf("unknown msg type: %s", msg_type);
+			break;
+		}
 	}
 
 	public void ready(owned ReadyFunc ready) {
@@ -190,6 +205,10 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 		}
 	}
 
+	private string saved_content;
+
+	public bool modified { private set; get; }
+
 	public NoteDownWindow(NoteDownApp application) {
 		Object(application : application);
 		this.setup_actions();
@@ -205,6 +224,10 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 				this.search_result = null;
 			}
 		});
+
+		editor.content_updated.connect_after((content) => {
+			modified = content != saved_content;
+		});
 	}
 
 	[GtkCallback]
@@ -218,6 +241,9 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
 			var content = (string) data.get_data();
 			yield editor.set_content(content);
+
+			saved_content = content;
+			modified = false;
 		} catch (Error err) {
 			warning("error: %s", err.message);
 		}
@@ -230,7 +256,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
 	[GtkCallback]
 	private string get_title_from_file() {
-		return file == null ? "Unnamed" : file.get_basename();
+		return "%s %s".printf(file == null ? "Unnamed" : file.get_basename(), modified ? "*" : "");
 	}
 
 	[GtkCallback]
@@ -289,6 +315,8 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 			file = yield(new Gtk.FileDialog()).save(this, null);
 			return_if_fail(file != null);
 			yield save_current_doc_to_file(file);
+
+			this._file = file;
 		} catch (Error err) {
 			show_toast(err.message);
 		}
@@ -307,6 +335,8 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 			warn_if_fail(yield stream.close_async());
 
 			show_toast("Save successfully!");
+
+			saved_content = text;
 		} catch (Error err) {
 			show_toast(err.message);
 		}

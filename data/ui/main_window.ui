@@ -29,6 +29,7 @@
                     <binding name="label">
                       <closure type="gchararray" function="get_title_from_file">
                         <lookup name="file">NoteDownWindow</lookup>
+                        <lookup name="modified">NoteDownWindow</lookup>
                       </closure>
                     </binding>
                     <property name="popover">
