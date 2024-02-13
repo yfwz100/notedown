@@ -41,33 +41,33 @@ public class FilePropForm : Adw.Bin {
 	}
 }
 
-public class SearchResult : Object {
-	private unowned NoteDownEditor editor;
+public class NoteDownEditor : Adw.Bin {
 
-	public SearchResult(NoteDownEditor editor) {
-		this.editor = editor;
-	}
+	public class SearchResult : Object {
+		private unowned NoteDownEditor editor;
 
-	public async void highlight_next() {
-		yield this.highlight("next");
-	}
+		public SearchResult(NoteDownEditor editor) {
+			this.editor = editor;
+		}
 
-	public async void highlight_prev() {
-		yield this.highlight("prev");
-	}
+		public async void highlight_next() {
+			yield this.highlight("next");
+		}
 
-	protected async void highlight(string dir) {
-		try {
-			var args = new VariantDict();
-			args.insert_value("dir", new Variant.string(dir));
-			yield this.editor.call_async_javascript_function("editor.find(dir)", -1, args.end(), null, null);
-		} catch (Error err) {
-			warning("highlight: %s", err.message);
+		public async void highlight_prev() {
+			yield this.highlight("prev");
+		}
+
+		protected async void highlight(string dir) {
+			try {
+				var args = new VariantDict();
+				args.insert_value("dir", new Variant.string(dir));
+				yield this.editor.web_view.call_async_javascript_function("editor.find(dir)", -1, args.end(), null, null);
+			} catch (Error err) {
+				warning("highlight: %s", err.message);
+			}
 		}
 	}
-}
-
-public class NoteDownEditor : WebKit.WebView {
 
 	public delegate void ReadyFunc();
 
@@ -81,18 +81,33 @@ public class NoteDownEditor : WebKit.WebView {
 
 	private LinkedList<ReadyFuncItem?> ready_funcs = new LinkedList<ReadyFuncItem?> ();
 
+	private unowned WebKit.WebView web_view;
+
 	private bool loaded = false;
 
 	public override void constructed() {
 		base.constructed();
-		this.editable = false;
-		this.settings = new WebKit.Settings() {
-			allow_file_access_from_file_urls = true
+
+		var web_view = new WebKit.WebView() {
+			settings = new WebKit.Settings() {
+				allow_file_access_from_file_urls = true,
+				enable_javascript = true,
+				enable_javascript_markup = true,
+				javascript_can_access_clipboard = true,
+				enable_developer_extras = true
+			},
 		};
-		this.set_background_color(Gdk.RGBA() { alpha = 0 });
-		// this.load_uri("http://localhost:5173/");
-		this.load_uri("file:///home/zhi/Work/scratch/notedown-web/dist/index.html");
-		this.load_changed.connect((event) => {
+		web_view.set_background_color(Gdk.RGBA() { alpha = 0 });
+
+		var ucm = web_view.user_content_manager;
+		ucm.script_message_received.connect((msg) => {
+			stdout.printf("msg: %s\n", msg.to_string());
+		});
+		string world_name = null;
+		ucm.register_script_message_handler("editor", world_name);
+
+		web_view.load_uri("file:///home/zhi/Work/scratch/notedown-web/dist/index.html");
+		web_view.load_changed.connect((event) => {
 			loaded = event == WebKit.LoadEvent.FINISHED;
 			if (loaded) {
 				foreach (var f in ready_funcs) {
@@ -101,6 +116,10 @@ public class NoteDownEditor : WebKit.WebView {
 				ready_funcs.clear();
 			}
 		});
+
+		this.child = web_view;
+
+		this.web_view = web_view;
 	}
 
 	public void ready(owned ReadyFunc ready) {
@@ -114,7 +133,7 @@ public class NoteDownEditor : WebKit.WebView {
 	public async SearchResult ? search(string keyword) throws Error {
 		var args = new VariantDict();
 		args.insert_value("keyword", new Variant.string(keyword));
-		yield this.call_async_javascript_function("editor.search(keyword)", -1, args.end(), null, null);
+		yield this.web_view.call_async_javascript_function("editor.search(keyword)", -1, args.end(), null, null);
 
 		if (keyword == "") {
 			return null;
@@ -125,11 +144,11 @@ public class NoteDownEditor : WebKit.WebView {
 	public async void set_content(string content) throws Error {
 		var args = new VariantDict();
 		args.insert_value("content", new Variant.string(content));
-		yield this.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
+		yield this.web_view.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
 	}
 
 	public async string get_content() throws Error {
-		var val = yield this.evaluate_javascript("editor.getMarkdown()", -1, null, null);
+		var val = yield this.web_view.evaluate_javascript("editor.getMarkdown()", -1, null, null);
 
 		if (!val.is_string()) {
 			throw new Error(Quark.from_string("abc"), 1, "not a string");
@@ -153,7 +172,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	[GtkChild]
 	private unowned Gtk.SearchEntry search_entry;
 
-	public SearchResult? search_result { set; get; }
+	public NoteDownEditor.SearchResult? search_result { set; get; }
 
 	private File? _file;
 
