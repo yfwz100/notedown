@@ -12,7 +12,7 @@
 - [x] modified indicator.
 - [x] find.
 - [ ] replace.
-- [ ] undo & redo.
+- [x] undo & redo.
 - [ ] dark mode.
 - [ ] outline.
 - [ ] file sidebar.

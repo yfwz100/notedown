@@ -170,6 +170,14 @@ public class NoteDownEditor : Adw.Bin {
 		}
 		return val.to_string();
 	}
+
+	public async void undo() throws Error {
+		yield this.web_view.evaluate_javascript("editor.undo()", -1, null, null);
+	}
+
+	public async void redo() throws Error {
+		yield this.web_view.evaluate_javascript("editor.redo()", -1, null, null);
+	}
 }
 
 [GtkTemplate(ui = "/ui/main_window.ui")]
@@ -262,6 +270,16 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 	[GtkCallback]
 	private void on_new_window() {
 		this.application.lookup_action("new").activate(null);
+	}
+
+	[GtkCallback]
+	private void on_undo() {
+		this.editor.undo.begin();
+	}
+
+	[GtkCallback]
+	private void on_redo() {
+		this.editor.redo.begin();
 	}
 
 	[GtkCallback]

@@ -19,6 +19,24 @@
                     <signal name="clicked" handler="on_new_window"></signal>
                   </object>
                 </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">edit-undo-symbolic</property>
+                    <binding name="sensitive">
+                      <lookup name="modified">NoteDownWindow</lookup>
+                    </binding>
+                    <signal name="clicked" handler="on_undo"></signal>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">edit-redo-symbolic</property>
+                    <binding name="sensitive">
+                      <lookup name="modified">NoteDownWindow</lookup>
+                    </binding>
+                    <signal name="clicked" handler="on_redo"></signal>
+                  </object>
+                </child>
                 <child type="title">
                   <object class="GtkMenuButton">
                     <binding name="sensitive">
