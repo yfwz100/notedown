@@ -35,6 +35,8 @@ interface Editor {
   search(value: string, opt?: SearchOption): void;
   find(action: 'previous' | 'next'): void;
   replace(replaceValue: string, opt?: ReplaceOption): void;
+  undo(): void;
+  redo(): void;
   getMarkdown(): string;
 }
 
@@ -52,7 +54,7 @@ interface WebKit {
 declare global {
   interface Window {
     editor: Editor;
-    webkit: WebKit;
+    webkit?: WebKit;
   }
 }
 
@@ -79,6 +81,15 @@ const editor = new Muya(document.getElementById('editor')!, {
   hideLinkPopup: true,
 });
 editor.init();
+editor.on('json-change', () => {
+  const history = editor.editor.history as  unknown as {stack:{redo: unknown[], undo: unknown[]}};
+  window.webkit?.messageHandlers.editor.postMessage({
+    type: 'state-change',
+    content: editor.getMarkdown(),
+    canUndo: history.stack.undo.length > 0,
+    canRedo: history.stack.redo.length > 0,
+  });
+});
 
 self.editor = new (class implements Editor {
   setContent(content: string): void {
@@ -96,12 +107,13 @@ self.editor = new (class implements Editor {
   replace(replaceValue: string, opt?: ReplaceOption | undefined): void {
     throw new Error('Method not implemented.');
   }
+  undo() {
+    editor.undo();
+  }
+  redo() {
+    editor.redo();
+  }
   getMarkdown(): string {
     return editor.getMarkdown();
   }
 })();
-
-// setInterval(() => {
-//   alert('hello'+window.webkit);
-//   window.webkit.messageHandlers.editor.postMessage("hello");
-// }, 1000);
