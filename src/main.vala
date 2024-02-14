@@ -112,7 +112,8 @@ public class NoteDownEditor : Adw.Bin {
 		string world_name = null;
 		ucm.register_script_message_handler("editor", world_name);
 
-		web_view.load_uri("file:///home/zhi/Work/scratch/notedown-web/dist/index.html");
+		var uri = File.new_for_path("data/web/index.html").get_uri();
+		web_view.load_uri(uri);
 		web_view.load_changed.connect((event) => {
 			loaded = event == WebKit.LoadEvent.FINISHED;
 			if (loaded) {
