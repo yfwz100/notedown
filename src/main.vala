@@ -85,7 +85,13 @@ public class NoteDownEditor : Adw.Bin {
 
 	private bool loaded = false;
 
-	public signal void content_updated(string content);
+	public signal void state_updated();
+
+	public bool can_redo { private set; get; }
+
+	public bool can_undo { private set; get; }
+
+	public string synced_content { private set; get; }
 
 	public override void constructed() {
 		base.constructed();
@@ -128,8 +134,11 @@ public class NoteDownEditor : Adw.Bin {
 		}
 		var msg_type = msg_value.object_get_property("type").to_string();
 		switch (msg_type) {
-		case "content-change":
-			this.content_updated(msg_value.object_get_property("content").to_string());
+		case "state-change":
+			this.synced_content = msg_value.object_get_property("content").to_string();
+			this.can_undo = msg_value.object_get_property("canUndo").to_boolean();
+			this.can_redo = msg_value.object_get_property("canRedo").to_boolean();
+			this.state_updated();
 			break;
 		default:
 			stdout.printf("unknown msg type: %s", msg_type);
@@ -215,8 +224,6 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
 	private string saved_content;
 
-	public bool modified { private set; get; }
-
 	public NoteDownWindow(NoteDownApp application) {
 		Object(application : application);
 		this.setup_actions();
@@ -232,10 +239,10 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 				this.search_result = null;
 			}
 		});
+	}
 
-		editor.content_updated.connect_after((content) => {
-			modified = content != saved_content;
-		});
+	private bool is_modified() {
+		return this.editor.synced_content != this.saved_content;
 	}
 
 	[GtkCallback]
@@ -251,7 +258,6 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 			yield editor.set_content(content);
 
 			saved_content = content;
-			modified = false;
 		} catch (Error err) {
 			warning("error: %s", err.message);
 		}
@@ -264,7 +270,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
 	[GtkCallback]
 	private string get_title_from_file() {
-		return "%s %s".printf(file == null ? "Unnamed" : file.get_basename(), modified ? "*" : "");
+		return "%s %s".printf(file == null ? "Unnamed" : file.get_basename(), is_modified() ? "*" : "");
 	}
 
 	[GtkCallback]
