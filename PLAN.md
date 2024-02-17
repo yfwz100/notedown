@@ -16,4 +16,4 @@
 - [ ] dark mode.
 - [ ] outline.
 - [ ] file sidebar.
-- [ ] package static editor resources in GResources.
+- [x] package static editor resources in GResource.

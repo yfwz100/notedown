@@ -9,6 +9,7 @@ notedown_prefix = get_option('prefix')
 notedown_datadir = join_paths(notedown_prefix, get_option('datadir'))
 
 subdir('data/icons')
+subdir('data/web')
 
 gnome = import('gnome')
 
@@ -29,6 +30,11 @@ executable(
       'ui',
       'data/ui.gresource.xml',
       source_dir: 'data'
+    ),
+    gnome.compile_resources(
+      'web',
+      'data/web/dist/web.gresource.xml',
+      source_dir: 'data/web/dist/'
     )
   ],
   c_args: [],

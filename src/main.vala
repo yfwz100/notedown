@@ -112,8 +112,22 @@ public class NoteDownEditor : Adw.Bin {
 		string world_name = null;
 		ucm.register_script_message_handler("editor", world_name);
 
-		var uri = File.new_for_path("data/web/index.html").get_uri();
-		web_view.load_uri(uri);
+		web_view.web_context.register_uri_scheme("builtin", (req) => {
+			try {
+				var path = req.get_path();
+				if (path[0] == '/') {
+					path = path[1:];
+				}
+				var res_file = File.new_for_uri("resource:///web/%s".printf(path));
+				var data = res_file.load_bytes(null, null);
+				var memory = new MemoryInputStream.from_bytes(data);
+				req.finish(memory, data.get_size(), null);
+			} catch(Error err) {
+				req.finish_error(err);
+				warning("error handling custom uri: %s", err.message);
+			}
+		});
+		web_view.load_uri("builtin:///editor/index.html");
 		web_view.load_changed.connect((event) => {
 			loaded = event == WebKit.LoadEvent.FINISHED;
 			if (loaded) {
