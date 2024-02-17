@@ -1,23 +1,52 @@
-html,
-body {
-  --icon-color: #000;
-  --theme-color: #ccc;
-  --editor-color: #555;
-  --selection-color: #ccc;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --theme-color: rgb(33 181 111 / 100%);
+    --highlight-color: rgb(33 181 111 / 40%);
+    --selection-color: rgb(45 170 219 / 30%);
+    --editor-color: rgb(255 255 255 / 70%);
+    --editor-color-80: rgb(0 0 0 / 80%);
+    --editor-color-50: rgb(0 0 0 / 50%);
+    --editor-color-30: rgb(0 0 0 / 30%);
+    --editor-color-10: rgb(0 0 0 / 10%);
+    --editor-color-04: rgb(0 0 0 / 3%);
+    --editor-bg-color: rgb(255 255 255 / 5%);
+    --delete-color: #ff6969;
+    --icon-color: #777;
+    --code-block-bg-color: rgb(0 0 0 / 3%);
+    --table-border-color: #555;
+    --input-bg-color: rgb(0 0 0 / 6%);
+    --button-font-color: var(--editor-color);
+    --button-bg-color: #555;
+    --button-border: 1px solid rgb(255 255 255 / 5%);
+    --button-bg-color-hover: rgb(255 255 255 / 5%);
+    --button-border-hover: var(--button-border);
+    --float-bg-color: #333;
+    --float-hover-color: rgb(255 255 255 / 4%);
+    --float-border-color: rgb(0 0 0 / 10%);
+    --float-shadow: rgb(15 15 15 / 3%) 0 0 0 1px, rgb(15 15 15 / 4%) 0 3px 6px, rgb(15 15 15 / 5%) 0 9px 24px;
+  }
 }
+
 .mu-icon-wrapper i.icon > i[class^='icon-'] {
   left: 0 !important;
 }
-.mu-format-picker li.item.active {
-  background-color: #efefef;
+.mu-format-picker {
+  li.item {
+    &.active {
+      background-color: var(--float-hover-color);
+    }
+
+    .icon-wrapper i.icon > i[class^='icon-'] {
+      display: block !important;
+      left: 0 !important;
+    }
+  }
 }
-.mu-format-picker li.item .icon-wrapper i.icon > i[class^='icon-'] {
-  display: block !important;
-  left: 0 !important;
-}
-.mu-front-menu li .icon-wrapper i.icon > i[class^='icon-'] {
-  left: 0 !important;
-}
-.mu-front-menu li .turn-into-item.active .icon-wrapper {
-  background-color: #efefef;
+.mu-front-menu li {
+  .icon-wrapper i.icon > i[class^='icon-'] {
+    left: 0 !important;
+  }
+  .turn-into-item.active .icon-wrapper {
+    background-color: var(--float-hover-color);
+  }
 }

@@ -13,7 +13,7 @@
 - [x] find.
 - [ ] replace.
 - [x] undo & redo.
-- [ ] dark mode.
+- [x] dark mode.
 - [ ] outline.
 - [ ] file sidebar.
 - [x] package static editor resources in GResource.
