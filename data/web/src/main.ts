@@ -82,12 +82,12 @@ const editor = new Muya(document.getElementById('editor')!, {
 });
 editor.init();
 editor.on('json-change', () => {
-  const history = editor.editor.history as  unknown as {stack:{redo: unknown[], undo: unknown[]}};
+  const h = editor.editor.history as unknown as { stack: { redo: unknown[], undo: unknown[] } };
   window.webkit?.messageHandlers.editor.postMessage({
     type: 'state-change',
     content: editor.getMarkdown(),
-    canUndo: history.stack.undo.length > 0,
-    canRedo: history.stack.redo.length > 0,
+    canUndo: h.stack.undo.length > 0,
+    canRedo: h.stack.redo.length > 0,
   });
 });
 
