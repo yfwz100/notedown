@@ -87,6 +87,8 @@ public class NoteDownEditor : Adw.Bin {
 
   public signal void state_updated();
 
+  public string base_path { set; get; }
+
   public bool can_redo { private set; get; }
 
   public bool can_undo { private set; get; }
@@ -99,10 +101,12 @@ public class NoteDownEditor : Adw.Bin {
     var web_view = new WebKit.WebView() {
       settings = new WebKit.Settings() {
         allow_file_access_from_file_urls = true,
+        allow_universal_access_from_file_urls = true,
         enable_javascript = true,
         enable_javascript_markup = true,
         javascript_can_access_clipboard = true,
-        enable_developer_extras = true
+        enable_developer_extras = true,
+        disable_web_security = true
       },
     };
     web_view.set_background_color(Gdk.RGBA() { alpha = 0 });
@@ -112,6 +116,18 @@ public class NoteDownEditor : Adw.Bin {
     string world_name = null;
     ucm.register_script_message_handler("editor", world_name);
 
+    web_view.web_context.register_uri_scheme("local", (req) => {
+      try {
+        var path = base_path + "/" + req.get_path();
+        var res_file = File.new_for_path(path);
+        var data = res_file.load_bytes(null, null);
+        var memory = new MemoryInputStream.from_bytes(data);
+        req.finish(memory, data.get_size(), null);
+      } catch (Error err) {
+        req.finish_error(err);
+        warning("error handling custom uri: %s", err.message);
+      }
+    });
     web_view.web_context.register_uri_scheme("builtin", (req) => {
       try {
         var path = req.get_path();
@@ -127,6 +143,7 @@ public class NoteDownEditor : Adw.Bin {
         warning("error handling custom uri: %s", err.message);
       }
     });
+    // web_view.web_context.get_security_manager().register_uri_scheme_as_cors_enabled("builtin");
     web_view.load_uri("builtin:///editor/index.html");
     web_view.load_changed.connect((event) => {
       loaded = event == WebKit.LoadEvent.FINISHED;
@@ -180,7 +197,9 @@ public class NoteDownEditor : Adw.Bin {
     return new SearchResult(this);
   }
 
-  public async void set_content(string content) throws Error {
+  public async void set_content(string content, string path = "") throws Error {
+    this.base_path = path;
+
     var args = new VariantDict();
     args.insert_value("content", new Variant.string(content));
     yield this.web_view.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
@@ -269,7 +288,8 @@ public class NoteDownWindow : Adw.ApplicationWindow {
       var data = yield file.load_bytes_async(null, null);
 
       var content = (string) data.get_data();
-      yield editor.set_content(content);
+      stdout.printf("file: %s; parent: %s\n", file.get_path(), file.get_parent().get_path());
+      yield editor.set_content(content, file.get_parent().get_path());
 
       saved_content = content;
     } catch (Error err) {
