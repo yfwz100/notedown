@@ -112,9 +112,9 @@ public class NoteDownEditor : Adw.Bin {
     web_view.set_background_color(Gdk.RGBA() { alpha = 0 });
 
     var ucm = web_view.user_content_manager;
-    ucm.script_message_received.connect(hanlde_script_messages);
+    ucm.script_message_with_reply_received.connect(hanlde_script_messages);
     string world_name = null;
-    ucm.register_script_message_handler("editor", world_name);
+    ucm.register_script_message_handler_with_reply("editor", world_name);
 
     web_view.web_context.register_uri_scheme("builtin", (req) => {
       try {
@@ -148,9 +148,9 @@ public class NoteDownEditor : Adw.Bin {
     this.web_view = web_view;
   }
 
-  private void hanlde_script_messages(JSC.Value msg_value) {
+  private bool hanlde_script_messages(JSC.Value msg_value, WebKit.ScriptMessageReply reply) {
     if (!msg_value.is_object()) {
-      return_if_reached();
+      return false;
     }
     var msg_type = msg_value.object_get_property("type").to_string();
     switch (msg_type) {
@@ -160,10 +160,24 @@ public class NoteDownEditor : Adw.Bin {
       this.can_redo = msg_value.object_get_property("canRedo").to_boolean();
       this.state_updated();
       break;
+    case "select-image":
+      reply.ref();
+      var file_dialog = new Gtk.FileDialog();
+      file_dialog.open.begin(null, null, (obj, res) => {
+        try {
+          var ret = file_dialog.open.end(res);
+          stdout.printf("select-image: %s", ret.get_path());
+          reply.return_value(new JSC.Value.string(msg_value.context, ret.get_path()));
+        } catch (Error err) {
+          reply.return_error_message(err.message);
+        }
+      });
+      return true;
     default:
       stdout.printf("unknown msg type: %s", msg_type);
       break;
     }
+    return false;
   }
 
   public void ready(owned ReadyFunc ready) {

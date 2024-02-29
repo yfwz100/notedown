@@ -20,8 +20,7 @@ import { Editor, ReplaceOption, SearchOption } from '../api';
 Muya.use(EmojiSelector);
 Muya.use(InlineFormatToolbar);
 const imagePathPicker = async () => {
-  // FIXME show file chooser.
-  return 'https://pics.ettoday.net/images/2253/d2253152.jpg';
+  return window.webkit?.messageHandlers.editor.postMessage({type: 'select-image'});
 };
 Muya.use(ImageEditTool, {
   imagePathPicker,

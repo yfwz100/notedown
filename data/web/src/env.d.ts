@@ -3,7 +3,7 @@ import { Editor } from './editor/api';
 // extends the global window to add editor.
 declare global {
   interface WebKitMessageHandler {
-    postMessage: typeof postMessage;
+    postMessage(value: unknown): Promise<unknown>;
   }
 
   interface WebKit {
@@ -18,4 +18,4 @@ declare global {
   }
 }
 
-export {}
+export {};
