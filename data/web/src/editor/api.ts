@@ -12,7 +12,7 @@ export interface ReplaceOption {
 }
 
 export interface Editor {
-  setContent(content: string): void;
+  setContent(content: string, basePath?: string): void;
   search(value: string, opt?: SearchOption): void;
   find(action: 'previous' | 'next'): void;
   replace(replaceValue: string, opt?: ReplaceOption): void;

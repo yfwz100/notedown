@@ -15,10 +15,7 @@ import {
   TableRowColumMenu,
 } from '@marktext/muya/dist/ui';
 import '@marktext/muya/dist/assets/style.css';
-import { Editor, ReplaceOption, SearchOption } from './api';
-import { normalizeImageUrl } from '../patch/file-url';
-
-normalizeImageUrl();
+import { Editor, ReplaceOption, SearchOption } from '../api';
 
 Muya.use(EmojiSelector);
 Muya.use(InlineFormatToolbar);
@@ -30,7 +27,7 @@ Muya.use(ImageEditTool, {
   imagePathPicker,
 });
 Muya.use(ImageToolBar);
-// Muya.use(ImageResizeBar);
+Muya.use(ImageResizeBar);
 Muya.use(CodeBlockLanguageSelector);
 
 Muya.use(ParagraphFrontButton);
@@ -43,10 +40,19 @@ Muya.use(PreviewToolBar);
 
 export class MuyaEditor implements Editor {
   private editor: Muya;
+  private basePath?: string;
 
-  constructor() {
-    const editor = new Muya(document.getElementById('editor')!);
+  constructor(el: HTMLElement) {
+    const editor = new Muya(el);
     editor.init();
+    const parent = this;
+    const { image } = editor.editor.inlineRenderer.renderer;
+    editor.editor.inlineRenderer.renderer.image = function (params) {
+      if (params.token.attrs.src.startsWith('.')) {
+        params.token.attrs.src = parent.basePath + '/' + params.token.attrs.src;
+      }
+      return image.call(this, params);
+    };
     editor.on('json-change', () => {
       const h = editor.editor.history as unknown as { stack: { redo: unknown[]; undo: unknown[] } };
       window.webkit?.messageHandlers.editor.postMessage({
@@ -59,7 +65,8 @@ export class MuyaEditor implements Editor {
     this.editor = editor;
   }
 
-  setContent(content: string): void {
+  setContent(content: string, basePath?: string): void {
+    this.basePath = basePath;
     this.editor.setContent(content);
   }
 

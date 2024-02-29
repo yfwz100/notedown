@@ -1,3 +1,5 @@
+<img src="./data/icons/hicolor/scalable/apps/notedown.svg" alt="logo" data-align="center">
+
 # NoteDown
 
 NoteDown is a simple Adwaita-like WYSIWYG markdown editor based on 
@@ -12,7 +14,7 @@ TODO.
 
 Build using meson:
 
-```
+```shell
 mkdir builddir
 cd builddir
 meson ../

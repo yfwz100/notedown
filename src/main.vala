@@ -116,18 +116,6 @@ public class NoteDownEditor : Adw.Bin {
     string world_name = null;
     ucm.register_script_message_handler("editor", world_name);
 
-    web_view.web_context.register_uri_scheme("local", (req) => {
-      try {
-        var path = base_path + "/" + req.get_path();
-        var res_file = File.new_for_path(path);
-        var data = res_file.load_bytes(null, null);
-        var memory = new MemoryInputStream.from_bytes(data);
-        req.finish(memory, data.get_size(), null);
-      } catch (Error err) {
-        req.finish_error(err);
-        warning("error handling custom uri: %s", err.message);
-      }
-    });
     web_view.web_context.register_uri_scheme("builtin", (req) => {
       try {
         var path = req.get_path();
@@ -202,7 +190,11 @@ public class NoteDownEditor : Adw.Bin {
 
     var args = new VariantDict();
     args.insert_value("content", new Variant.string(content));
-    yield this.web_view.call_async_javascript_function("editor.setContent(content)", -1, args.end(), null, null);
+    args.insert_value("basePath", new Variant.string(path));
+    yield this.web_view.call_async_javascript_function("editor.setContent(content, basePath)",
+      -1, args.end(),
+      null,
+      null);
   }
 
   public async string get_content() throws Error {
@@ -288,7 +280,6 @@ public class NoteDownWindow : Adw.ApplicationWindow {
       var data = yield file.load_bytes_async(null, null);
 
       var content = (string) data.get_data();
-      stdout.printf("file: %s; parent: %s\n", file.get_path(), file.get_parent().get_path());
       yield editor.set_content(content, file.get_parent().get_path());
 
       saved_content = content;

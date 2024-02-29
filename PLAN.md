@@ -11,9 +11,16 @@
 - [x] application icon.
 - [x] modified indicator.
 - [x] find.
-- [ ] replace.
 - [x] undo & redo.
 - [x] dark mode.
+- [x] package static editor resources in GResource.
+- [x] display network image.
+- [x] display image relative to the markdown file in editor.
+- [ ] select image in editor.
+- [ ] paste to save image beside the markdown file.
+- [ ] preference dialog.
 - [ ] outline.
 - [ ] file sidebar.
-- [x] package static editor resources in GResource.
+- [ ] incremental build for web content.
+- [ ] published as flatpak.
+- [ ] replace.
