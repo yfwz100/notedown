@@ -34,15 +34,19 @@
 .mu-icon-wrapper i.icon > i[class^='icon-'] {
   left: 0 !important;
 }
-.mu-format-picker {
+.mu-format-picker,
+.mu-table-column-tools {
   li.item {
     &.active {
       background-color: var(--float-hover-color);
     }
 
-    .icon-wrapper i.icon > i[class^='icon-'] {
-      display: block !important;
-      left: 0 !important;
+    .icon-wrapper i.icon {
+      overflow: hidden;
+      > i[class^='icon-'] {
+        display: block !important;
+        left: 0 !important;
+      }
     }
   }
 }
