@@ -17,10 +17,28 @@ import {
 import '@marktext/muya/dist/assets/style.css';
 import { Editor, ReplaceOption, SearchOption } from '../api';
 
+function createNativeProxy<T extends Record<string, unknown>>(name: string) {
+  return new Proxy({} as T, {
+    get(_, key) {
+      return function (...args: unknown[]) {
+        return window.webkit?.messageHandlers[name].postMessage({
+          func: key,
+          args,
+        });
+      };
+    },
+  });
+}
+
+const native = createNativeProxy<{
+  selectFile(): Promise<string>;
+  syncState(state: { content: string; canUndo: boolean; canRedo: boolean }): Promise<void>;
+}>('editor');
+
 Muya.use(EmojiSelector);
 Muya.use(InlineFormatToolbar);
 const imagePathPicker = async () => {
-  return window.webkit?.messageHandlers.editor.postMessage({type: 'select-image'});
+  return native.selectFile();
 };
 Muya.use(ImageEditTool, {
   imagePathPicker,
@@ -44,6 +62,7 @@ export class MuyaEditor implements Editor {
   constructor(el: HTMLElement) {
     const editor = new Muya(el);
     editor.init();
+
     const parent = this;
     const { image } = editor.editor.inlineRenderer.renderer;
     editor.editor.inlineRenderer.renderer.image = function (params) {
@@ -52,10 +71,10 @@ export class MuyaEditor implements Editor {
       }
       return image.call(this, params);
     };
+
     editor.on('json-change', () => {
       const h = editor.editor.history as unknown as { stack: { redo: unknown[]; undo: unknown[] } };
-      window.webkit?.messageHandlers.editor.postMessage({
-        type: 'state-change',
+      native.syncState({
         content: editor.getMarkdown(),
         canUndo: h.stack.undo.length > 0,
         canRedo: h.stack.redo.length > 0,

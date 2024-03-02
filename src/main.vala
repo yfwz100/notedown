@@ -95,6 +95,53 @@ public class NoteDownEditor : Adw.Bin {
 
   public string synced_content { private set; get; }
 
+  private abstract class JSFunc {
+    protected unowned NoteDownEditor editor;
+
+    protected JSFunc(NoteDownEditor editor) {
+      this.editor = editor;
+    }
+
+    public abstract async JSC.Value ? call(JSC.Context ctx, JSC.Value args) throws Error;
+  }
+
+  private Map<string, JSFunc> js_func_map = new HashMap<string, JSFunc> ();
+
+  private class JSSyncStateFunc : JSFunc {
+
+    public JSSyncStateFunc(NoteDownEditor editor) {
+      base(editor);
+    }
+
+    public async override JSC.Value ? call(JSC.Context ctx, JSC.Value args) {
+      var state = args.object_get_property_at_index(0);
+      if (!state.is_object()) {
+        return null;
+      }
+      editor.synced_content = state.object_get_property("content").to_string();
+      editor.can_undo = state.object_get_property("canUndo").to_boolean();
+      editor.can_redo = state.object_get_property("canRedo").to_boolean();
+      editor.state_updated();
+      return null;
+    }
+  }
+
+  private class JSSelectFileFunc : JSFunc {
+
+    public JSSelectFileFunc(NoteDownEditor editor) {
+      base(editor);
+    }
+
+    public async override JSC.Value ? call(JSC.Context ctx, JSC.Value args) throws Error {
+      var file_dialog = new Gtk.FileDialog();
+      var ret = yield file_dialog.open(null, null);
+      if (ret == null) {
+        return null;
+      }
+      return new JSC.Value.string(ctx, ret.get_path());
+    }
+  }
+
   public override void constructed() {
     base.constructed();
 
@@ -111,6 +158,9 @@ public class NoteDownEditor : Adw.Bin {
     };
     web_view.set_background_color(Gdk.RGBA() { alpha = 0 });
 
+    js_func_map.set("syncState", new JSSyncStateFunc(this));
+    js_func_map.set("selectFile", new JSSelectFileFunc(this));
+
     var ucm = web_view.user_content_manager;
     ucm.script_message_with_reply_received.connect(hanlde_script_messages);
     string world_name = null;
@@ -120,7 +170,7 @@ public class NoteDownEditor : Adw.Bin {
       try {
         var path = req.get_path();
         if (path[0] == '/') {
-          path = path[1 :];
+          path = path[1 : ];
         }
         var res_file = File.new_for_uri("resource:///web/%s".printf(path));
         var data = res_file.load_bytes(null, null);
@@ -131,6 +181,7 @@ public class NoteDownEditor : Adw.Bin {
         warning("error handling custom uri: %s", err.message);
       }
     });
+
     // web_view.web_context.get_security_manager().register_uri_scheme_as_cors_enabled("builtin");
     web_view.load_uri("builtin:///editor/index.html");
     web_view.load_changed.connect((event) => {
@@ -152,32 +203,27 @@ public class NoteDownEditor : Adw.Bin {
     if (!msg_value.is_object()) {
       return false;
     }
-    var msg_type = msg_value.object_get_property("type").to_string();
-    switch (msg_type) {
-    case "state-change":
-      this.synced_content = msg_value.object_get_property("content").to_string();
-      this.can_undo = msg_value.object_get_property("canUndo").to_boolean();
-      this.can_redo = msg_value.object_get_property("canRedo").to_boolean();
-      this.state_updated();
-      break;
-    case "select-image":
-      reply.ref();
-      var file_dialog = new Gtk.FileDialog();
-      file_dialog.open.begin(null, null, (obj, res) => {
-        try {
-          var ret = file_dialog.open.end(res);
-          stdout.printf("select-image: %s", ret.get_path());
-          reply.return_value(new JSC.Value.string(msg_value.context, ret.get_path()));
-        } catch (Error err) {
-          reply.return_error_message(err.message);
-        }
-      });
-      return true;
-    default:
-      stdout.printf("unknown msg type: %s", msg_type);
-      break;
+    var func_name = msg_value.object_get_property("func").to_string();
+    var args = msg_value.object_get_property("args");
+    if (!args.is_array()) {
+      return false;
     }
-    return false;
+    var func = js_func_map.get(func_name);
+    if (func == null) {
+      error("call undefined function %s", func_name);
+    }
+    reply.ref();
+    func.call.begin(msg_value.context, args, (obj, res) => {
+      try {
+        var val = func.call.end(res);
+        if (val != null) {
+          reply.return_value(val);
+        }
+      } catch (Error err) {
+        reply.return_error_message(err.message);
+      }
+    });
+    return true;
   }
 
   public void ready(owned ReadyFunc ready) {
