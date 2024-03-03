@@ -28,8 +28,8 @@ executable(
     files('./src/main.vala'),
     gnome.compile_resources(
       'ui',
-      'data/ui.gresource.xml',
-      source_dir: 'data'
+      'data/ui/ui.gresource.xml',
+      source_dir: 'data/ui/'
     ),
     gnome.compile_resources(
       'web',
