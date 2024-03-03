@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/ui/">
     <file>main_window.ui</file>
+    <file>file_editor.ui</file>
     <file>file_prop_form.ui</file>
   </gresource>
 </gresources>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="NoteDownFileEditor" parent="AdwBin">
+    <child>
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <child>
+              <object class="GtkButton" id="add_btn">
+                <property name="icon-name">list-add</property>
+                <signal name="clicked" handler="on_new_window" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="icon-name">edit-undo-symbolic</property>
+                <binding name="sensitive">
+                  <lookup name="can_undo">editor</lookup>
+                </binding>
+                <signal name="clicked" handler="on_undo" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="icon-name">edit-redo-symbolic</property>
+                <binding name="sensitive">
+                  <lookup name="can_redo">editor</lookup>
+                </binding>
+                <signal name="clicked" handler="on_redo" />
+              </object>
+            </child>
+            <child type="title">
+              <object class="GtkMenuButton">
+                <binding name="label">
+                  <closure type="gchararray" function="get_title_from_file">
+                    <lookup name="file">NoteDownFileEditor</lookup>
+                    <lookup name="synced_content">editor</lookup>
+                  </closure>
+                </binding>
+                <property name="popover">
+                  <object class="GtkPopover">
+                    <style>
+                      <class name="boxed-list" />
+                    </style>
+                    <child>
+                      <object class="FilePropForm">
+                        <binding name="file">
+                          <lookup name="file">NoteDownFileEditor</lookup>
+                        </binding>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="popover">
+                  <object class="GtkPopoverMenu">
+                    <property name="menu-model">main-menu</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="search_btn">
+                <property name="icon-name">system-search-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwToastOverlay" id="overlay">
+            <child>
+              <object class="NoteDownEditor" id="editor" />
+            </child>
+          </object>
+        </property>
+        <child type="bottom">
+          <object class="GtkSearchBar" id="search_bar">
+            <property
+              name="search-mode-enabled"
+              bind-source="search_btn"
+              bind-property="active"
+              bind-flags="bidirectional"
+            />
+            <property name="show-close-button">yes</property>
+            <property name="child">
+              <object class="GtkBox">
+                <style>
+                  <class name="linked" />
+                </style>
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkSearchEntry" id="search_entry">
+                    <signal name="search-changed" handler="on_search" />
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">go-up-symbolic</property>
+                    <binding name="sensitive">
+                      <closure type="gboolean" function="has_search_result">
+                        <lookup name="search_result">NoteDownFileEditor</lookup>
+                      </closure>
+                    </binding>
+                    <signal name="clicked" handler="find_prev" />
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">go-down-symbolic</property>
+                    <binding name="sensitive">
+                      <closure type="gboolean" function="has_search_result">
+                        <lookup name="search_result">NoteDownFileEditor</lookup>
+                      </closure>
+                    </binding>
+                    <signal name="clicked" handler="find_next" />
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+  <menu id="main-menu">
+    <section>
+      <item>
+        <attribute name="label">_New...</attribute>
+        <attribute name="action">app.new</attribute>
+      </item>
+      <item>
+        <attribute name="label">_Open...</attribute>
+        <attribute name="action">app.open</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label">_Find &amp; Replace</attribute>
+        <attribute name="action">win.find-and-replace</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label">_Save</attribute>
+        <attribute name="action">win.save</attribute>
+      </item>
+      <item>
+        <attribute name="label">Save As...</attribute>
+        <attribute name="action">win.save-as</attribute>
+      </item>
+      <item>
+        <attribute name="label">Properties</attribute>
+        <attribute name="action">win.properties</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label">_Preference</attribute>
+        <attribute name="action">app.preference</attribute>
+      </item>
+      <item>
+        <attribute name="label">Shortcuts</attribute>
+        <attribute name="action">app.shortcut</attribute>
+      </item>
+      <item>
+        <attribute name="label">_Help</attribute>
+        <attribute name="action">app.help</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_About</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

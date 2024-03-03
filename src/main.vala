@@ -135,6 +135,7 @@ public class NoteDownEditor : Adw.Bin {
     public async override JSC.Value ? call(JSC.Context ctx, JSC.Value args) throws Error {
       var file_dialog = new Gtk.FileDialog();
       var ret = yield file_dialog.open(null, null);
+
       if (ret == null) {
         return null;
       }
@@ -275,8 +276,10 @@ public class NoteDownEditor : Adw.Bin {
   }
 }
 
-[GtkTemplate(ui = "/ui/main_window.ui")]
-public class NoteDownWindow : Adw.ApplicationWindow {
+[GtkTemplate(ui = "/ui/file_editor.ui")]
+public class NoteDownFileEditor : Adw.Bin {
+
+  public unowned Gtk.Window window { get; set; }
 
   [GtkChild]
   private unowned NoteDownEditor editor;
@@ -310,9 +313,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
 
   private string saved_content;
 
-  public NoteDownWindow(NoteDownApp application) {
-    Object(application : application);
-    this.setup_actions();
+  public override void constructed() {
     this.setup_ui();
   }
 
@@ -326,8 +327,30 @@ public class NoteDownWindow : Adw.ApplicationWindow {
     });
   }
 
+  public void show_toast(string msg) {
+    overlay.add_toast(new Adw.Toast(msg));
+  }
+
   private bool is_modified() {
+    if (this.editor == null) {
+      return false;
+    }
     return this.editor.synced_content != this.saved_content;
+  }
+
+  [GtkCallback]
+  private void on_new_window() {
+    this.window.application.lookup_action("new").activate(null);
+  }
+
+  [GtkCallback]
+  private void on_undo() {
+    this.editor.undo.begin();
+  }
+
+  [GtkCallback]
+  private void on_redo() {
+    this.editor.redo.begin();
   }
 
   [GtkCallback]
@@ -348,62 +371,6 @@ public class NoteDownWindow : Adw.ApplicationWindow {
     }
   }
 
-  [GtkCallback]
-  public bool is_file_valid() {
-    return file != null;
-  }
-
-  [GtkCallback]
-  private string get_title_from_file() {
-    return "%s %s".printf(file == null ? "Unnamed" : file.get_basename(), is_modified() ? "*" : "");
-  }
-
-  [GtkCallback]
-  private void on_new_window() {
-    this.application.lookup_action("new").activate(null);
-  }
-
-  [GtkCallback]
-  private void on_undo() {
-    this.editor.undo.begin();
-  }
-
-  [GtkCallback]
-  private void on_redo() {
-    this.editor.redo.begin();
-  }
-
-  [GtkCallback]
-  private void on_search() {
-    this.editor.search.begin(search_entry.text, (obj, res) => {
-      try {
-        this.search_result = this.editor.search.end(res);
-      } catch (Error err) {
-        warning("search error: %s", err.message);
-      }
-    });
-  }
-
-  [GtkCallback]
-  private void find_next() {
-    if (this.search_result == null) {
-      return;
-    }
-    this.search_result.highlight_next.begin();
-  }
-
-  [GtkCallback]
-  private void find_prev() {
-    if (this.search_result == null) {
-      return;
-    }
-    this.search_result.highlight_prev.begin();
-  }
-
-  public void show_toast(string msg) {
-    overlay.add_toast(new Adw.Toast(msg));
-  }
-
   private async void save_current_doc_async() {
     if (file != null) {
       yield save_current_doc_to_file(file);
@@ -421,7 +388,7 @@ public class NoteDownWindow : Adw.ApplicationWindow {
   private async File ? save_as_doc_async() {
     File? file = null;
     try {
-      file = yield(new Gtk.FileDialog()).save(this, null);
+      file = yield(new Gtk.FileDialog()).save(window, null);
       return_if_fail(file != null);
       yield save_current_doc_to_file(file);
 
@@ -455,8 +422,59 @@ public class NoteDownWindow : Adw.ApplicationWindow {
     save_as_doc_async.begin();
   }
 
+  [GtkCallback]
+  private string get_title_from_file() {
+    return "%s %s".printf(file == null ? "Unnamed" : file.get_basename(), is_modified() ? "*" : "");
+  }
+
   public void toggle_search() {
     search_bar.search_mode_enabled = !search_bar.search_mode_enabled;
+  }
+
+  [GtkCallback]
+  private void on_search() {
+    this.editor.search.begin(search_entry.text, (obj, res) => {
+      try {
+        this.search_result = this.editor.search.end(res);
+      } catch (Error err) {
+        warning("search error: %s", err.message);
+      }
+    });
+  }
+
+  [GtkCallback]
+  private void find_next() {
+    if (this.search_result == null) {
+      return;
+    }
+    this.search_result.highlight_next.begin();
+  }
+
+  [GtkCallback]
+  private void find_prev() {
+    if (this.search_result == null) {
+      return;
+    }
+    this.search_result.highlight_prev.begin();
+  }
+}
+
+[GtkTemplate(ui = "/ui/main_window.ui")]
+public class NoteDownWindow : Adw.ApplicationWindow {
+
+  [GtkChild]
+  private unowned NoteDownFileEditor _file_editor;
+
+  public unowned NoteDownFileEditor file_editor { get { return _file_editor; } }
+
+  public NoteDownWindow(NoteDownApp application) {
+    Object(application : application);
+    this.setup_ui();
+    this.setup_actions();
+  }
+
+  private void setup_ui() {
+    this.file_editor.window = this;
   }
 
   private void setup_actions() {
@@ -464,17 +482,23 @@ public class NoteDownWindow : Adw.ApplicationWindow {
     this.insert_action_group("win", win_actions);
 
     var find_replace_action = new SimpleAction("find-and-replace", null);
-    find_replace_action.activate.connect(toggle_search);
+    find_replace_action.activate.connect(() => {
+      file_editor.toggle_search();
+    });
     win_actions.add_action(find_replace_action);
     this.application.set_accels_for_action("win.find-and-replace", { "<Control>f" });
 
     var save_action = new SimpleAction("save", null);
-    save_action.activate.connect(save_current_doc);
+    save_action.activate.connect(() => {
+      file_editor.save_current_doc();
+    });
     win_actions.add_action(save_action);
     this.application.set_accels_for_action("win.save", { "<Control>s" });
 
     var save_as_action = new SimpleAction("save-as", null);
-    save_as_action.activate.connect(save_as_doc);
+    save_as_action.activate.connect(() => {
+      file_editor.save_as_doc();
+    });
     win_actions.add_action(save_as_action);
     this.application.set_accels_for_action("win.save-as", { "<Control><Alt>s" });
   }
@@ -497,13 +521,13 @@ public class NoteDownApp : Adw.Application {
       return_if_fail(file != null);
 
       var current_window = this.get_active_window() as NoteDownWindow;
-      if (current_window != null && current_window.file == null) {
-        current_window.file = file;
+      if (current_window != null && current_window.file_editor.file == null) {
+        current_window.file_editor.file = file;
         return;
       }
 
       var editorWindow = new NoteDownWindow(this);
-      editorWindow.file = file;
+      editorWindow.file_editor.file = file;
       editorWindow.present();
     } catch (Error err) {
       warning("error: %s", err.message);
