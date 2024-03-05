@@ -1,3 +1,7 @@
+:root {
+  --editor-shadow-color: #ccc;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --theme-color: rgb(33 181 111 / 100%);
@@ -10,6 +14,7 @@
     --editor-color-10: rgb(255 255 255 / 10%);
     --editor-color-04: rgb(255 255 255 / 3%);
     --editor-bg-color: rgb(255 255 255 / 5%);
+    --editor-shadow-color: #111;
     --delete-color: #ff6969;
     --icon-color: #777;
     --code-block-bg-color: rgb(0 0 0 / 3%);
@@ -29,6 +34,34 @@
   body {
     color: #fff;
   }
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  &::before {
+    content: ' ';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    box-shadow: 0 0 8px 2px #0000;
+    transition-duration: 0.2s;
+  }
+  &.scrolled::before {
+    box-shadow: 0 0 8px 2px var(--editor-shadow-color);
+  }
+}
+
+.container {
+  overflow: auto;
 }
 
 .mu-icon-wrapper i.icon > i[class^='icon-'] {
