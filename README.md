@@ -23,4 +23,4 @@ meson build
 
 ## License
 
-GPLv3
+MIT
