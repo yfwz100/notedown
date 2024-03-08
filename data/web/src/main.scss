@@ -52,11 +52,11 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    box-shadow: 0 0 8px 2px #0000;
+    box-shadow: 0 0 5px 1px #0000;
     transition-duration: 0.2s;
   }
   &.scrolled::before {
-    box-shadow: 0 0 8px 2px var(--editor-shadow-color);
+    box-shadow: 0 0 5px 1px var(--editor-shadow-color);
   }
 }
 
