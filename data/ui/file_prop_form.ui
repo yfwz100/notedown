@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk" version="4.12" />
   <requires lib="libadwaita" version="1.4" />
-  <template class="FilePropForm" parent="AdwBin">
+  <template class="NoteDownFilePropForm" parent="AdwBin">
     <child>
       <object class="GtkListBox">
         <property name="selection-mode">none</property>

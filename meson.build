@@ -9,7 +9,7 @@ notedown_prefix = get_option('prefix')
 notedown_datadir = join_paths(notedown_prefix, get_option('datadir'))
 
 subdir('data/icons')
-subdir('data/web')
+#subdir('data/web')
 
 gnome = import('gnome')
 
@@ -25,7 +25,13 @@ executable(
     dependency('webkitgtk-6.0')
   ],
   sources: [
-    files('./src/main.vala'),
+    files(
+      './src/App.vala',
+      './src/FilePropForm.vala',
+      './src/MarkdownEditor.vala',
+      './src/FileEditor.vala',
+      './src/MainWindow.vala'
+    ),
     gnome.compile_resources(
       'ui',
       'data/ui/ui.gresource.xml',

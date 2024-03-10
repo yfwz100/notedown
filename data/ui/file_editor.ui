@@ -43,7 +43,7 @@
                       <class name="boxed-list" />
                     </style>
                     <child>
-                      <object class="FilePropForm">
+                      <object class="NoteDownFilePropForm">
                         <binding name="file">
                           <lookup name="file">NoteDownFileEditor</lookup>
                         </binding>
@@ -73,7 +73,7 @@
         <property name="content">
           <object class="AdwToastOverlay" id="overlay">
             <child>
-              <object class="NoteDownEditor" id="editor" />
+              <object class="NoteDownMarkdownEditor" id="editor" />
             </child>
           </object>
         </property>
