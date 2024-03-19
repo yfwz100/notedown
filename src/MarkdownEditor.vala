@@ -53,6 +53,8 @@ namespace NoteDown {
     public bool can_undo { private set; get; }
   
     public string synced_content { private set; get; }
+
+    public bool scrolled { private set; get; }
   
     private abstract class JSFunc {
       protected unowned MarkdownEditor editor;
@@ -101,6 +103,17 @@ namespace NoteDown {
         return new JSC.Value.string(ctx, ret.get_path());
       }
     }
+
+    private class JSSyncScrolledFunc : JSFunc {
+      public JSSyncScrolledFunc(MarkdownEditor editor) {
+        base(editor);
+      }
+  
+      public async override JSC.Value ? call(JSC.Context ctx, JSC.Value args) throws Error {
+        editor.scrolled = args.object_get_property_at_index(0).to_boolean();
+        return null;
+      }
+    }
   
     public override void constructed() {
       base.constructed();
@@ -120,6 +133,7 @@ namespace NoteDown {
   
       js_func_map.set("syncState", new JSSyncStateFunc(this));
       js_func_map.set("selectFile", new JSSelectFileFunc(this));
+      js_func_map.set("syncScrolled", new JSSyncScrolledFunc(this));
   
       var ucm = web_view.user_content_manager;
       ucm.script_message_with_reply_received.connect(hanlde_script_messages);

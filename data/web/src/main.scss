@@ -44,22 +44,6 @@ body {
   padding: 0;
 }
 
-body {
-  &::before {
-    content: ' ';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    box-shadow: 0 0 5px 1px #0000;
-    transition-duration: 0.2s;
-  }
-  &.scrolled::before {
-    box-shadow: 0 0 5px 1px var(--editor-shadow-color);
-  }
-}
-
 .container {
   overflow: auto;
 }

@@ -16,24 +16,7 @@ import {
 } from '@marktext/muya/dist/ui';
 import '@marktext/muya/dist/assets/style.css';
 import { Editor, ReplaceOption, SearchOption } from '../api';
-
-function createNativeProxy<T extends Record<string, unknown>>(name: string) {
-  return new Proxy({} as T, {
-    get(_, key) {
-      return function (...args: unknown[]) {
-        return window.webkit?.messageHandlers[name].postMessage({
-          func: key,
-          args,
-        });
-      };
-    },
-  });
-}
-
-const native = createNativeProxy<{
-  selectFile(): Promise<string>;
-  syncState(state: { content: string; canUndo: boolean; canRedo: boolean }): Promise<void>;
-}>('editor');
+import { native } from '../../native/proxy';
 
 Muya.use(EmojiSelector);
 Muya.use(InlineFormatToolbar);

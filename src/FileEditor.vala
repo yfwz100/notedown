@@ -55,6 +55,11 @@ namespace NoteDown {
       overlay.add_toast(new Adw.Toast(msg));
     }
 
+    [GtkCallback]
+    private Adw.ToolbarStyle get_top_bar_style() {
+      return editor.scrolled ? Adw.ToolbarStyle.RAISED : Adw.ToolbarStyle.FLAT;
+    }
+
     private bool is_modified() {
       if (this.editor == null) {
         return false;
