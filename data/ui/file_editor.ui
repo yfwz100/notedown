@@ -8,7 +8,7 @@
             <lookup name="scrolled">editor</lookup>
           </closure>
         </binding>
-        <property name="top-bar-style">ADW_TOOLBAR_RAISED</property>
+        <property name="bottom-bar-style">ADW_TOOLBAR_RAISED</property>
         <child type="top">
           <object class="AdwHeaderBar">
             <child>
