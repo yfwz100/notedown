@@ -13,14 +13,12 @@
             </style>
             <property name="title" translatable="yes">File Name</property>
             <binding name="subtitle">
-              <lookup name="file_name">FilePropForm</lookup>
+              <lookup name="file_name">NoteDownFilePropForm</lookup>
             </binding>
             <child>
               <object class="GtkButton">
-                <style>
-                  <class name="flat" />
-                </style>
                 <property name="icon-name">edit-copy-symbolic</property>
+                <property name="valign">center</property>
                 <signal name="clicked" handler="copy_file_name" />
               </object>
             </child>
@@ -33,15 +31,17 @@
             </style>
             <property name="title" translatable="yes">File Path</property>
             <binding name="subtitle">
-              <lookup name="file_path">FilePropForm</lookup>
+              <lookup name="file_path">NoteDownFilePropForm</lookup>
             </binding>
             <child>
-              <object class="GtkButton">
-                <style>
-                  <class name="flat" />
-                </style>
-                <property name="icon-name">edit-copy-symbolic</property>
-                <signal name="clicked" handler="copy_file_path" />
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">edit-copy-symbolic</property>
+                    <property name="valign">center</property>
+                    <signal name="clicked" handler="copy_file_path" />
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -53,7 +53,7 @@
             </style>
             <property name="title" translatable="yes">File Size</property>
             <binding name="subtitle">
-              <lookup name="file_size">FilePropForm</lookup>
+              <lookup name="file_size">NoteDownFilePropForm</lookup>
             </binding>
           </object>
         </child>

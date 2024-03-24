@@ -45,9 +45,6 @@
                 </binding>
                 <property name="popover">
                   <object class="GtkPopover">
-                    <style>
-                      <class name="boxed-list" />
-                    </style>
                     <child>
                       <object class="NoteDownFilePropForm">
                         <binding name="file">
