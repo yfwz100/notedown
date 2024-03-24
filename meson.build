@@ -30,7 +30,8 @@ executable(
       './src/FilePropForm.vala',
       './src/MarkdownEditor.vala',
       './src/FileEditor.vala',
-      './src/MainWindow.vala'
+      './src/MainWindow.vala',
+      './src/PrefWindow.vala'
     ),
     gnome.compile_resources(
       'ui',

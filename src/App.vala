@@ -35,7 +35,7 @@ namespace NoteDown {
     }
   
     public void show_pref_window() {
-      // TODO
+      new PrefWindow().present();
     }
   
     public void show_about_window() {
@@ -68,10 +68,10 @@ namespace NoteDown {
       about_action.activate.connect(show_about_window);
       this.add_action(about_action);
   
-      var pref_action = new SimpleAction("preference", null);
+      var pref_action = new SimpleAction("preferences", null);
       pref_action.activate.connect(show_pref_window);
       this.add_action(pref_action);
-      this.set_accels_for_action("app.preference", { "<Control>comma" });
+      this.set_accels_for_action("app.preferences", { "<Control>comma" });
     }
   
     public override void activate() {

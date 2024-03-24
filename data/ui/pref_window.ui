@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="NoteDownPrefWindow" parent="AdwPreferencesWindow">
+    <property name="title">Preferences</property>
+    <child>
+      <object class="AdwPreferencesPage">
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title">Appearance</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Name</property>
+                <property name="subtitle">The name to show</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">edit-copy-symbolic</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

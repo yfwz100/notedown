@@ -162,8 +162,8 @@
     </section>
     <section>
       <item>
-        <attribute name="label">_Preference</attribute>
-        <attribute name="action">app.preference</attribute>
+        <attribute name="label">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
       </item>
       <item>
         <attribute name="label">Shortcuts</attribute>

@@ -4,5 +4,6 @@
     <file>main_window.ui</file>
     <file>file_editor.ui</file>
     <file>file_prop_form.ui</file>
+    <file>pref_window.ui</file>
   </gresource>
 </gresources>
